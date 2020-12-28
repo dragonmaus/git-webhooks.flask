@@ -24,9 +24,9 @@ def api_key_required(f):
 @app.route('/push', methods=['POST'])
 @api_key_required
 def push():
-    data = request.get_json()
-    if not data:
+    if not request.is_json:
         return status(400)
+    data = request.json
 
     if not ('created' in data and data['created'] and \
             'ref' in data and data['ref'].startswith('refs/tags/')):
