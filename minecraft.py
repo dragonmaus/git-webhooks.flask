@@ -3,6 +3,8 @@ from operator import itemgetter
 from flask import Flask, jsonify, request
 from mcstatus import MinecraftServer
 
+from common import shellify
+
 app = Flask(__name__)
 
 @app.route('/online', methods=['POST'])
@@ -76,28 +78,3 @@ def status():
         return jsonify(data)
     elif fmt == 'shell':
         return shellify(data)
-
-def shellify(data):
-    text = ''
-    for k, v in data.items():
-        text += py2sh(k, v)
-    return app.response_class(text, mimetype='text/x-shellscript')
-
-def py2sh(key, value, prefix=''):
-    result = ''
-    if type(value) == dict:
-        for k, v in value.items():
-            result += py2sh(k, v, f'{prefix}{key}_')
-    elif type(value) == list:
-        for i in range(len(value)):
-            result += py2sh(i, value[i], f'{prefix}{key}_')
-    elif type(value) == bool:
-        result += f'{prefix}{key}="{shellquote(str(value).lower())}"\n'
-    else:
-        result += f'{prefix}{key}="{shellquote(value)}"\n'
-    return result
-
-shellquote_table = str.maketrans(dict([(c, '\\' + c) for c in '"$\\`']))
-
-def shellquote(value):
-    return str(value).translate(shellquote_table)
