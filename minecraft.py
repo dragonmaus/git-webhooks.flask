@@ -20,7 +20,11 @@ def online():
         data['online'] = True
     except:
         pass
-    return jsonify(data)
+    fmt = request.form.get('format', 'json')
+    if fmt == 'json':
+        return jsonify(data)
+    elif fmt == 'shell':
+        return shellify(data)
 
 @app.route('/status', methods=['POST'])
 def status():
@@ -67,4 +71,28 @@ def status():
         data['software']['version'] = query.software.version
     except:
         pass
-    return jsonify(data)
+    fmt = request.form.get('format', 'json')
+    if fmt == 'json':
+        return jsonify(data)
+    elif fmt == 'shell':
+        return shellify(data)
+
+def shellify(data):
+    text = ''
+    for k, v in data.items():
+        text += py2sh(k, v)
+    return app.response_class(text, mimetype='text/x-shellscript')
+
+def py2sh(key, value, prefix=''):
+    result = ''
+    if type(value) == dict:
+        for k, v in value.items():
+            result += py2sh(k, v, f'{prefix}{key}_')
+    elif type(value) == list:
+        for i in range(len(value)):
+            result += py2sh(i, value[i], f'{prefix}{key}_')
+    elif type(value) == bool:
+        result += f'{prefix}{key}="{str(value).lower()}"\n'
+    else:
+        result += f'{prefix}{key}="{value}"\n'
+    return result
