@@ -92,7 +92,12 @@ def py2sh(key, value, prefix=''):
         for i in range(len(value)):
             result += py2sh(i, value[i], f'{prefix}{key}_')
     elif type(value) == bool:
-        result += f'{prefix}{key}="{str(value).lower()}"\n'
+        result += f'{prefix}{key}="{shellquote(str(value).lower())}"\n'
     else:
-        result += f'{prefix}{key}="{value}"\n'
+        result += f'{prefix}{key}="{shellquote(value)}"\n'
     return result
+
+shellquote_table = str.maketrans(dict([(c, '\\' + c) for c in '"$\\`']))
+
+def shellquote(value):
+    return str(value).translate(shellquote_table)
