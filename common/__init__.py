@@ -27,10 +27,10 @@ def py2sh(key, value, prefix=''):
     elif type(value) == list:
         for i in range(len(value)):
             result += py2sh(i, value[i], f'{prefix}{key}_')
-    elif type(value) == bool:
-        result += f'{prefix}{key}="{shellquote(str(value).lower())}"\n'
     else:
-        result += f'{prefix}{key}="{shellquote(value)}"\n'
+        if type(value) == bool:
+            value = str(value).lower()
+        result = f'{prefix}{key}="{shellquote(value)}"\n'
     return result
 
 shellquote_table = str.maketrans(dict([(c, '\\' + c) for c in '"$\\`']))
